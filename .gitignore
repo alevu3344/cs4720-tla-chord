@@ -1,0 +1,14 @@
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# TLA+ / TLC
+*.class
+*.jar
+*.out
+*.log
+*.trace
+states/
+.tlc/
+TLCOutput/
