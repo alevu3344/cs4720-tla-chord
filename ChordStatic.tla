@@ -7,11 +7,22 @@ CONSTANTS
 
 VARIABLES 
     succ,   \* succ[n] is the immediate successor of node n
+    pred,   \* pred[n] is the immediate predecessor of node n
     finger, \* finger[n][i] is the i-th finger of node n
     queries \* A set of ongoing lookups
 
 \* The set of all possible IDs in the ring: 0 .. 2^M - 1
 Ring == 0 .. (2^M - 1)
+
+\* Numeric sentinel for unresolved lookups (outside Ring)
+NoResult == 2^M
+
+ASSUME /\ M \in Nat \ {0}
+       /\ Nodes \subseteq Ring
+       /\ Nodes # {}
+
+\* All mutable model state.
+StateVars == <<succ, pred, finger, queries>>
 
 \* Helper for modular addition
 AddMod(a, b) == (a + b) % (2^M)
@@ -37,9 +48,16 @@ TrueSucc(n) ==
             \A m \in Nodes \ {s} : 
                 InRightHalfClosed(s, n, m)
 
+\* Helper: Find true predecessor of active node 'n' among the active 'Nodes'
+TruePred(n) ==
+    CHOOSE p \in Nodes : TrueSucc(AddMod(p, 1)) = n
+
 Init ==
     \* Initialize successors
     /\ succ = [n \in Nodes |-> TrueSucc(AddMod(n, 1))]
+
+    \* Initialize predecessors
+    /\ pred = [n \in Nodes |-> TruePred(n)]
 
     \* Initialize finger tables
     /\ finger = [n \in Nodes |-> 
@@ -62,32 +80,33 @@ ClosestPrecedingFinger(n, id) ==
     ELSE 
         n
 
-\* We use "None" represent an unresolved query.
+\* We use NoResult to represent an unresolved query.
 
 \* Action 1: Node 'n' wants to look up key 'k'. We add a new query record to the set.
 StartQuery(n, k) ==
+    /\ UNCHANGED <<succ, pred, finger>>
     \* Prevent infinite queries from flooding the state space during model checking
     \* by only allowing one active query per (node, key) pair.
     /\ \neg (\E q \in queries : q.origin = n /\ q.target = k)
-    /\ queries' = queries \cup {[origin |-> n, target |-> k, curr |-> n, result |-> "None"]}
+    /\ queries' = queries \cup {[origin |-> n, target |-> k, curr |-> n, result |-> NoResult]}
     \* State of the ring doesn't change
-    /\ UNCHANGED <<succ, finger>>
 
 \* Action 2: Process a query that hasn't been resolved yet
 AdvanceQuery(q) ==
+    /\ UNCHANGED <<succ, pred, finger>>
     \* If the target is between the current node and its successor...
-    IF InRightHalfClosed(q.target, q.curr, succ[q.curr]) THEN
-        LET resolved_q == [q EXCEPT !.result = succ[q.curr]] IN
-        queries' = (queries \ {q}) \cup {resolved_q}
-    ELSE
-        LET next_node == ClosestPrecedingFinger(q.curr, q.target) IN
-        /\ next_node /= q.curr 
-        /\ LET forwarded_q == [q EXCEPT !.curr = next_node] IN
-           queries' = (queries \ {q}) \cup {forwarded_q}
-    /\ UNCHANGED <<succ, finger>>
+    /\ IF InRightHalfClosed(q.target, q.curr, succ[q.curr]) THEN
+           LET resolved_q == [q EXCEPT !.result = succ[q.curr]] IN
+           queries' = (queries \ {q}) \cup {resolved_q}
+       ELSE
+           LET next_node == ClosestPrecedingFinger(q.curr, q.target) IN
+           /\ next_node /= q.curr 
+           /\ LET forwarded_q == [q EXCEPT !.curr = next_node] IN
+              queries' = (queries \ {q}) \cup {forwarded_q}
 
 Next == 
     \/ (\E n \in Nodes, k \in Ring : StartQuery(n, k))
-    \/ (\E q \in queries : q.result = "None" /\ AdvanceQuery(q))
+    \/ (\E q \in queries : q.result = NoResult /\ AdvanceQuery(q))
 
-Spec == Init /\ [][Next]_<<succ, finger, queries>>
+Spec == Init /\ [][Next]_StateVars
+=============================================================================
