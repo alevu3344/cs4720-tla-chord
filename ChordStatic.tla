@@ -9,7 +9,7 @@ VARIABLES
     succ,   \* succ[n] is the immediate successor of node n
     pred,   \* pred[n] is the immediate predecessor of node n
     finger, \* finger[n][i] is the i-th finger of node n
-    queries \* A set of ongoing lookups
+    queries \* A set of ongoing lookup requests
 
 \* The set of all possible IDs in the ring: 0 .. 2^M - 1
 Ring == 0 .. (2^M - 1)
@@ -23,6 +23,17 @@ ASSUME /\ M \in Nat \ {0}
 
 \* All mutable model state.
 StateVars == <<succ, pred, finger, queries>>
+
+\* Shape of lookup records stored in 'queries'.
+QueryRecord ==
+    [origin : Nodes, target : Ring, curr : Nodes, result : (Nodes \cup {NoResult})]
+
+\* Basic type-correctness invariant for all mutable state.
+TypeOK ==
+    /\ succ \in [Nodes -> Nodes]
+    /\ pred \in [Nodes -> Nodes]
+    /\ finger \in [Nodes -> [1..M -> Nodes]]
+    /\ queries \subseteq QueryRecord
 
 \* Helper for modular addition
 AddMod(a, b) == (a + b) % (2^M)
@@ -73,14 +84,12 @@ ValidFingers(n, id) ==
 
 \* Return the finger node with the highest index, or 'n' if none exist
 ClosestPrecedingFinger(n, id) ==
-    IF ValidFingers(n, id) /= {} THEN
+    IF ValidFingers(n, id) # {} THEN
         LET max_i == CHOOSE i \in ValidFingers(n, id) : 
                         \A j \in ValidFingers(n, id) : i >= j
         IN finger[n][max_i]
     ELSE 
         n
-
-\* We use NoResult to represent an unresolved query.
 
 \* Action 1: Node 'n' wants to look up key 'k'. We add a new query record to the set.
 StartQuery(n, k) ==
@@ -100,7 +109,7 @@ AdvanceQuery(q) ==
            queries' = (queries \ {q}) \cup {resolved_q}
        ELSE
            LET next_node == ClosestPrecedingFinger(q.curr, q.target) IN
-           /\ next_node /= q.curr 
+           /\ next_node # q.curr 
            /\ LET forwarded_q == [q EXCEPT !.curr = next_node] IN
               queries' = (queries \ {q}) \cup {forwarded_q}
 
