@@ -35,6 +35,10 @@ TypeOK ==
     /\ finger \in [Nodes -> [1..M -> Nodes]]
     /\ queries \subseteq QueryRecord
 
+\* Avoid exploring all interleavings of all possible completed query records.
+OneQueryConstraint ==
+    Cardinality(queries) <= 1
+
 \* Helper for modular addition
 AddMod(a, b) == (a + b) % (2^M)
 
@@ -62,6 +66,11 @@ TrueSucc(n) ==
 \* Helper: Find true predecessor of active node 'n' among the active 'Nodes'
 TruePred(n) ==
     CHOOSE p \in Nodes : TrueSucc(AddMod(p, 1)) = n
+
+\* Every completed lookup returns the mathematically correct Chord successor.
+LookupCorrect ==
+    \A q \in queries :
+        q.result # NoResult => q.result = TrueSucc(q.target)
 
 Init ==
     \* Initialize successors
