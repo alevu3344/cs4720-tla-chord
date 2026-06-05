@@ -1,7 +1,7 @@
 # CS4720 TLA+ Chord Model
 
-This repository contains a TLA+ model of the static Chord lookup protocol for
-CS4720 Research in Software Analysis, project variant A.
+This repository contains TLA+ models of the Chord protocol for CS4720 Research
+in Software Analysis, project variant A.
 
 Report draft:
 https://www.overleaf.com/project/6a0357b148b03f2bd71e5f1e
@@ -71,3 +71,48 @@ Nodes = {0, 2}
 Unconstrained `M = 3` configs with all query records enabled grow into millions
 of states, so larger verification runs should use `OneQueryConstraint` or a more
 compact query abstraction.
+
+## Dynamic Join Abstraction
+
+`ChordDynamic.tla` models dynamic transitions:
+
+- `Join(n, contact)`: a configured joining node enters the active ring.
+- `Stabilize(n)`: a node consults its successor's predecessor and sends an
+  asynchronous notification.
+- `DeliverNotify(msg)`: a notification message is delivered nondeterministically
+  from the global `notifyMsgs` set.
+- `FixFingers(n)`: a node repairs one finger-table slot and advances
+  `nextFinger[n]`.
+
+The dynamic model keeps the same bounded identifier-ring abstraction as the
+static model. `notifyMsgs` abstracts RPC delivery and permits out-of-order
+notification handling. `Join` and `FixFingers` use the mathematical successor in
+the currently active bounded ring; the static model separately covers lookup-hop
+behavior.
+
+The liveness property is:
+
+```tla
+EventuallyStableAfterJoins == AllJoinsDone ~> StableRing
+```
+
+`Spec` adds weak fairness for each configured join, each node's `stabilize` and
+`fix_fingers` actions, and each concrete notification message. 
+Run the dynamic configs with:
+
+```sh
+tlc -config ChordDynamic.cfg ChordDynamic.tla
+tlc -config configs/dynamic-m3-one-join.cfg ChordDynamic.tla
+tlc -config configs/dynamic-m3-one-join-invariant.cfg ChordDynamic.tla
+```
+
+## Current Dynamic TLC Results
+
+| Config | Purpose | Result | Distinct states | Depth |
+| --- | --- | --- | ---: | ---: |
+| `ChordDynamic.cfg` | one join with liveness | passed | 8,676 | 23 |
+| `configs/dynamic-m3-one-join.cfg` | one join with liveness | passed | 8,676 | 23 |
+| `configs/dynamic-m3-one-join-invariant.cfg` | one join, invariant only | passed | 8,676 | 23 |
+
+The two-join invariant reached more than 2,000,000 distinct states
+before completion.
