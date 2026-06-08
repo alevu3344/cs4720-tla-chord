@@ -59,8 +59,12 @@ InRightHalfClosed(x, a, b) ==
 
 \* Mathematical successor of key k in a concrete node set.
 TrueSuccIn(nodes, k) ==
-    CHOOSE s \in nodes :
-        \A n \in nodes : InRightHalfClosed(s, k, n)
+    IF k \in nodes THEN
+        k
+    ELSE
+        CHOOSE s \in nodes :
+            \A n \in nodes \ {s} :
+                InRightHalfClosed(s, k, n)
 
 \* Mathematical predecessor of node n in a concrete node set.
 TruePredIn(nodes, n) ==
@@ -75,13 +79,13 @@ Init ==
     /\ nextFinger = [n \in InitialNodes |-> 1]
     /\ notifyMsgs = {}
 
-\* Initialize local state using an existing contact node.
-\* The find_successor RPC is abstracted to the mathematical successor in the
-\* current active ring; the static model covers lookup-hop behavior separately.
-Join(n, contact) ==
+\* Initialize local state for a joining node.
+\* The paper asks a known contact node to route find_successor(n). This model
+\* abstracts that RPC to the mathematical successor in the current active ring;
+\* the static model covers lookup-hop behavior separately.
+Join(n) ==
     LET s == TrueSuccIn(active, n) IN
     /\ n \in JoinNodes \ active
-    /\ contact \in active
     /\ active' = active \cup {n}
     /\ succ' = Extend(succ, n, s)
     /\ pred' = Extend(pred, n, Nil)
@@ -123,7 +127,7 @@ FixFingers(n) ==
     /\ UNCHANGED <<active, succ, pred, notifyMsgs>>
 
 Next ==
-    \/ \E n \in JoinNodes, contact \in AllNodes : Join(n, contact)
+    \/ \E n \in JoinNodes : Join(n)
     \/ \E n \in AllNodes : Stabilize(n)
     \/ \E msg \in NotifyRecord : DeliverNotify(msg)
     \/ \E n \in AllNodes : FixFingers(n)
@@ -149,7 +153,7 @@ EventuallyStableAfterJoins == AllJoinsDone ~> StableRing
 Spec ==
     /\ Init
     /\ [][Next]_StateVars
-    /\ \A n \in AllNodes : WF_StateVars(\E contact \in AllNodes : Join(n, contact))
+    /\ \A n \in JoinNodes : WF_StateVars(Join(n))
     /\ \A n \in AllNodes : WF_StateVars(Stabilize(n))
     /\ \A n \in AllNodes : WF_StateVars(FixFingers(n))
     /\ \A msg \in NotifyRecord : WF_StateVars(DeliverNotify(msg))

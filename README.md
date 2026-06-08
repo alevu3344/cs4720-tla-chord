@@ -76,7 +76,7 @@ compact query abstraction.
 
 `ChordDynamic.tla` models dynamic transitions:
 
-- `Join(n, contact)`: a configured joining node enters the active ring.
+- `Join(n)`: a configured joining node enters the active ring.
 - `Stabilize(n)`: a node consults its successor's predecessor and sends an
   asynchronous notification.
 - `DeliverNotify(msg)`: a notification message is delivered nondeterministically
@@ -86,9 +86,15 @@ compact query abstraction.
 
 The dynamic model keeps the same bounded identifier-ring abstraction as the
 static model. `notifyMsgs` abstracts RPC delivery and permits out-of-order
-notification handling. `Join` and `FixFingers` use the mathematical successor in
-the currently active bounded ring; the static model separately covers lookup-hop
-behavior.
+notification handling. In the Chord paper, a joining node asks a known contact
+node to route `find_successor`. Here, `Join` directly uses the mathematical
+successor in the active ring, while the static model separately covers
+lookup-hop behavior. Consequently, the dynamic model does not capture a join
+lookup being delayed, misrouted by stale routing information, or failing.
+
+Dynamic configs enable deadlock checking because active nodes can always run
+periodic stabilization or finger repair. Static configs disable it because their
+bounded lookup experiments intentionally reach terminal completed states.
 
 The liveness property is:
 
@@ -110,9 +116,10 @@ tlc -config configs/dynamic-m3-one-join-invariant.cfg ChordDynamic.tla
 
 | Config | Purpose | Result | Distinct states | Depth |
 | --- | --- | --- | ---: | ---: |
-| `ChordDynamic.cfg` | one join with liveness | passed | 8,676 | 23 |
-| `configs/dynamic-m3-one-join.cfg` | one join with liveness | passed | 8,676 | 23 |
-| `configs/dynamic-m3-one-join-invariant.cfg` | one join, invariant only | passed | 8,676 | 23 |
+| `ChordDynamic.cfg` | one join with liveness | passed | 6,516 | 21 |
+| `configs/dynamic-m3-one-join.cfg` | one join with liveness | passed | 6,516 | 21 |
+| `configs/dynamic-m3-one-join-invariant.cfg` | one join, invariant only | passed | 6,516 | 21 |
 
-The two-join invariant reached more than 2,000,000 distinct states
-before completion.
+The completed one-join runs also passed deadlock checking. The two-join
+invariant reached more than 2,000,000 distinct states before completion and
+must be rerun after the latest model changes.
