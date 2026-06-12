@@ -11,7 +11,7 @@ VARIABLES
     succ,           \* succ[n] is n's current immediate successor pointer.
     pred,           \* pred[n] is n's current predecessor pointer, or Nil.
     finger,         \* finger[n][i] is n's current i-th finger entry.
-    nextFinger,     \* next finger index repaired by fix_fingers.
+    nextFinger,     \* next finger index repaired by round-robin fix_fingers.
     notifyMsgs      \* In-flight asynchronous notify messages.
 
 \* Identifier space 0 .. 2^M - 1.
@@ -76,6 +76,7 @@ Init ==
     /\ pred = [n \in InitialNodes |-> TruePredIn(InitialNodes, n)]
     /\ finger = [n \in InitialNodes |->
                     [i \in 1..M |-> TrueSuccIn(InitialNodes, AddMod(n, 2^(i-1)))]]
+    \* Every node starts the round-robin repair cycle at finger index 1.
     /\ nextFinger = [n \in InitialNodes |-> 1]
     /\ notifyMsgs = {}
 
@@ -89,7 +90,9 @@ Join(n) ==
     /\ active' = active \cup {n}
     /\ succ' = Extend(succ, n, s)
     /\ pred' = Extend(pred, n, Nil)
+    \* Initial fingers are usable active-node pointers but may be stale.
     /\ finger' = Extend(finger, n, [i \in 1..M |-> s])
+    \* The joining node also starts repairing from finger index 1.
     /\ nextFinger' = Extend(nextFinger, n, 1)
     /\ notifyMsgs' = notifyMsgs
 
@@ -116,7 +119,7 @@ DeliverNotify(msg) ==
     /\ notifyMsgs' = notifyMsgs \ {msg}
     /\ UNCHANGED <<active, succ, finger, nextFinger>>
 
-\* Advance one repair slot and refresh that entry.
+\* Refresh one slot, then advance cyclically through 1..M.
 FixFingers(n) ==
     /\ n \in active
     /\ LET i == nextFinger[n] IN

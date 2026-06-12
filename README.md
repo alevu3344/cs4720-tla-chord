@@ -93,6 +93,11 @@ For a representative wraparound lookup with `M = 3` and
 - `FixFingers(n)`: a node repairs one finger-table slot and advances
   `nextFinger[n]`.
 
+`nextFinger[n]` starts at `1` and cycles through `1..M`. This round-robin
+schedule replaces the paper's random finger selection. A join does not repair
+existing tables atomically: old entries, and some entries initialized for the
+new node, can temporarily be stale while still pointing to active nodes.
+
 The dynamic model keeps the same bounded identifier-ring abstraction as the
 static model. `notifyMsgs` abstracts RPC delivery and permits out-of-order
 notification handling. In the Chord paper, a joining node asks a known contact
@@ -110,6 +115,22 @@ The liveness property is:
 ```tla
 EventuallyStableAfterJoins == AllJoinsDone ~> StableRing
 ```
+
+This is a batch-oriented property. With multiple configured joiners, it
+requires convergence after all of them are active; it does not require the ring
+to stabilize between individual joins.
+
+For the one-join configuration, the initial ring is `{0, 4}` and node `2`
+joins:
+
+1. `Join(2)` sets `succ[2] = 4` and `pred[2] = Nil`.
+2. `Stabilize(2)` sends notification `2 -> 4`; delivery changes `pred[4]` to
+   `2`.
+3. `Stabilize(0)` observes that `2` lies between `0` and successor `4`, changes
+   `succ[0]` to `2`, and sends notification `0 -> 2`.
+4. Delivery changes `pred[2]` to `0`, producing the correct ring
+   `0 -> 2 -> 4 -> 0`.
+5. Repeated `FixFingers` actions repair the remaining stale finger entries.
 
 `Spec` adds weak fairness for each configured join, each node's `stabilize` and
 `fix_fingers` actions, and each concrete notification message. 
