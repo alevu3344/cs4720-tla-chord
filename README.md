@@ -162,6 +162,18 @@ tlc -config configs/dynamic-m3-two-joins.cfg ChordDynamic.tla
 | `configs/dynamic-m3-two-joins-invariant.cfg` | `TypeOK`; `SuccessorCoreReachable`; deadlock | passed | 25,309,837 | 2,345,796 | 35 | 01m 00s |
 | `configs/dynamic-m3-two-joins.cfg` | `TypeOK`; deadlock; `EventuallyStableAfterJoins` | passed | 25,309,837 | 2,345,796 | 35 | 21min 33s |
 
+Adding the second joining node increases the distinct state count from 6,516
+to 2,345,796, approximately `360x`. Both join orders and the interleavings of
+four nodes' maintenance actions, notification delivery, stale pointers, and
+finger-repair positions contribute to this multiplicative growth.
+
+The invariant-only and liveness runs reach the same two-join state space, but
+the temporal run is much slower. Invariants are checked independently on each
+state as TLC discovers it. Liveness checking must additionally analyze the
+state-transition graph for fair cycles in which `AllJoinsDone` holds but
+`StableRing` is never reached, including the weak-fairness conditions in
+`Spec`.
+
 ## SysMoBench Metrics
 
 The artifact adapts three SysMoBench metrics:
