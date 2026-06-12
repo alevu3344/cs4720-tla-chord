@@ -29,6 +29,12 @@ The configs currently verify:
 - `TypeOK`: all mutable state has the expected shape.
 - `LookupCorrect`: every completed lookup resolves to `TrueSucc(target)`,
   the mathematically correct Chord successor for the static ring.
+- `SuccessorCoreReachable`: every active node's successor chain reaches the
+  initial ring, excluding a disconnected successor cycle made only of joining
+  nodes.
+- `EventuallyStableAfterJoins`: after all configured joins occur, the dynamic
+  ring eventually has mathematically correct successor, predecessor, and
+  finger-table entries.
 
 ## Running TLC
 
@@ -42,6 +48,7 @@ tlc -config ChordStatic.cfg ChordStatic.tla
 tlc -config configs/static-m2-basic.cfg ChordStatic.tla
 tlc -config configs/static-m3-one-query.cfg ChordStatic.tla
 tlc -config configs/static-m3-wrap-one-query.cfg ChordStatic.tla
+tlc -coverage 1 -config configs/static-m3-one-query-runtime.cfg ChordStatic.tla
 ```
 
 With `tla2tools.jar` from PowerShell:
@@ -139,6 +146,7 @@ Run the dynamic configs with:
 ```sh
 tlc -config ChordDynamic.cfg ChordDynamic.tla
 tlc -config configs/dynamic-m3-one-join.cfg ChordDynamic.tla
+tlc -coverage 1 -config configs/dynamic-m3-one-join-runtime.cfg ChordDynamic.tla
 tlc -config configs/dynamic-m3-one-join-invariant.cfg ChordDynamic.tla
 tlc -config configs/dynamic-m3-two-joins-invariant.cfg ChordDynamic.tla
 tlc -config configs/dynamic-m3-two-joins.cfg ChordDynamic.tla
@@ -150,6 +158,21 @@ tlc -config configs/dynamic-m3-two-joins.cfg ChordDynamic.tla
 | --- | --- | --- | ---: | ---: | ---: | ---: |
 | `configs/dynamic-m3-one-join.cfg` | `TypeOK`; deadlock; `EventuallyStableAfterJoins` | passed | 51,409 | 6,516 | 21 | 01s |
 | `ChordDynamic.cfg` | `TypeOK`; deadlock; `EventuallyStableAfterJoins` | passed | 51,409 | 6,516 | 21 | 01s |
-| `configs/dynamic-m3-one-join-invariant.cfg` | `TypeOK`; deadlock | passed | 51,409 | 6,516 | 21 | 00s |
-| `configs/dynamic-m3-two-joins-invariant.cfg` | `TypeOK`; deadlock | passed | 25,309,837 | 2,345,796 | 35 | 49s |
+| `configs/dynamic-m3-one-join-invariant.cfg` | `TypeOK`; `SuccessorCoreReachable`; deadlock | passed | 51,409 | 6,516 | 21 | 03s |
+| `configs/dynamic-m3-two-joins-invariant.cfg` | `TypeOK`; `SuccessorCoreReachable`; deadlock | passed | 25,309,837 | 2,345,796 | 35 | 01m 00s |
 | `configs/dynamic-m3-two-joins.cfg` | `TypeOK`; deadlock; `EventuallyStableAfterJoins` | passed | 25,309,837 | 2,345,796 | 35 | 21min 33s |
+
+## SysMoBench Metrics
+
+The artifact adapts three SysMoBench metrics:
+
+| Metric | Result | Evidence |
+| --- | ---: | --- |
+| Syntax correctness | 100% (2/2 modules) | SANY accepts `ChordStatic.tla` and `ChordDynamic.tla`. |
+| Runtime correctness | 100% (6/6 action families) | Property-free coverage runs execute `StartQuery`, `AdvanceQuery`, `Join`, `Stabilize`, `DeliverNotify`, and `FixFingers` without runtime errors. |
+| Invariant correctness | 100% (5/5 obligations) | Both `TypeOK` checks, `LookupCorrect`, `SuccessorCoreReachable`, and `EventuallyStableAfterJoins` pass the recorded configurations. |
+
+Runtime correctness is measured with the two `*-runtime.cfg` files and TLC's
+`-coverage 1` option. Trace conformance is not evaluated because the project
+models the Chord paper and does not include an instrumented Chord
+implementation or implementation traces.

@@ -70,6 +70,12 @@ TrueSuccIn(nodes, k) ==
 TruePredIn(nodes, n) ==
     CHOOSE p \in nodes : TrueSuccIn(nodes, AddMod(p, 1)) = n
 
+RECURSIVE FollowSucc(_, _)
+
+\* Follow the current successor pointers for a bounded number of hops.
+FollowSucc(n, hops) ==
+    IF hops = 0 THEN n ELSE FollowSucc(succ[n], hops - 1)
+
 Init ==
     /\ active = InitialNodes
     /\ succ = [n \in InitialNodes |-> TrueSuccIn(InitialNodes, AddMod(n, 1))]
@@ -134,6 +140,12 @@ Next ==
     \/ \E n \in AllNodes : Stabilize(n)
     \/ \E msg \in NotifyRecord : DeliverNotify(msg)
     \/ \E n \in AllNodes : FixFingers(n)
+
+\* A join must not create a successor cycle disconnected from the initial ring.
+SuccessorCoreReachable ==
+    \A n \in active :
+        \E hops \in 0..Cardinality(active) :
+            FollowSucc(n, hops) \in InitialNodes
 
 \* Stable-state predicates used by verifier configs and liveness checks.
 SuccessorsStable ==
