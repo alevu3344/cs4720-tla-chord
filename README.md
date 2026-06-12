@@ -61,12 +61,9 @@ Nodes = {0, 2}
 
 ## Current TLC Results
 
-| Config | Purpose | Result | Distinct states | Depth |
-| --- | --- | --- | ---: | ---: |
-| `ChordStatic.cfg` | default static configuration | passed | 20,736 | 21 |
-| `configs/static-m2-basic.cfg` | basic static configuration | passed | 20,736 | 21 |
-| `configs/static-m3-one-query.cfg` | three-node ring, one query at a time | passed | 67 | 5 |
-| `configs/static-m3-wrap-one-query.cfg` | sparse wraparound ring, one query at a time | passed | 65 | 4 |
+| Config | Properties checked | Result | States generated | Distinct states | Depth | Runtime |
+| --- | --- | --- | ---: | ---: | ---: | ---: |
+| `configs/static-m3-one-query.cfg` | `TypeOK`; `LookupCorrect` | passed | 1,585 | 67 | 5 | 00s |
 
 Unconstrained `M = 3` configs with all query records enabled grow into millions
 of states, so larger verification runs should use `OneQueryConstraint` or a more
@@ -110,16 +107,16 @@ Run the dynamic configs with:
 tlc -config ChordDynamic.cfg ChordDynamic.tla
 tlc -config configs/dynamic-m3-one-join.cfg ChordDynamic.tla
 tlc -config configs/dynamic-m3-one-join-invariant.cfg ChordDynamic.tla
+tlc -config configs/dynamic-m3-two-joins-invariant.cfg ChordDynamic.tla
+tlc -config configs/dynamic-m3-two-joins.cfg ChordDynamic.tla
 ```
 
 ## Current Dynamic TLC Results
 
-| Config | Purpose | Result | Distinct states | Depth |
-| --- | --- | --- | ---: | ---: |
-| `ChordDynamic.cfg` | one join with liveness | passed | 6,516 | 21 |
-| `configs/dynamic-m3-one-join.cfg` | one join with liveness | passed | 6,516 | 21 |
-| `configs/dynamic-m3-one-join-invariant.cfg` | one join, invariant only | passed | 6,516 | 21 |
-
-The completed one-join runs also passed deadlock checking. The two-join
-invariant reached more than 2,000,000 distinct states before completion and
-must be rerun after the latest model changes.
+| Config | Properties checked | Result | States generated | Distinct states | Depth | Runtime |
+| --- | --- | --- | ---: | ---: | ---: | ---: |
+| `configs/dynamic-m3-one-join.cfg` | `TypeOK`; deadlock; `EventuallyStableAfterJoins` | passed | 51,409 | 6,516 | 21 | 01s |
+| `ChordDynamic.cfg` | `TypeOK`; deadlock; `EventuallyStableAfterJoins` | passed | 51,409 | 6,516 | 21 | 01s |
+| `configs/dynamic-m3-one-join-invariant.cfg` | `TypeOK`; deadlock | passed | 51,409 | 6,516 | 21 | 00s |
+| `configs/dynamic-m3-two-joins-invariant.cfg` | `TypeOK`; deadlock | passed | 25,309,837 | 2,345,796 | 35 | 49s |
+| `configs/dynamic-m3-two-joins.cfg` | `TypeOK`; deadlock; `EventuallyStableAfterJoins` | passed | 25,309,837 | 2,345,796 | 35 | 21min 33s |
