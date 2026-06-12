@@ -63,11 +63,23 @@ Nodes = {0, 2}
 
 | Config | Properties checked | Result | States generated | Distinct states | Depth | Runtime |
 | --- | --- | --- | ---: | ---: | ---: | ---: |
-| `configs/static-m3-one-query.cfg` | `TypeOK`; `LookupCorrect` | passed | 1,585 | 67 | 5 | 00s |
+| `ChordStatic.cfg` | `TypeOK`; `LookupCorrect` | passed | 117,505 | 20,736 | 21 | 02s |
+| `configs/static-m2-basic.cfg` | `TypeOK`; `LookupCorrect` | passed | 117,505 | 20,736 | 21 | 02s |
+| `configs/static-m3-one-query.cfg` | `TypeOK`; `LookupCorrect` | passed | 1,585 | 67 | 5 | 01s |
+| `configs/static-m3-wrap-one-query.cfg` | `TypeOK`; `LookupCorrect` | passed | 1,537 | 65 | 4 | 01s |
 
 Unconstrained `M = 3` configs with all query records enabled grow into millions
 of states, so larger verification runs should use `OneQueryConstraint` or a more
 compact query abstraction.
+
+The static configs disable TLC deadlock checking because query records are
+retained after completion. Once the bounded workload has resolved, no further
+transition is expected; this terminal state represents completion rather than a
+protocol deadlock.
+
+For a representative wraparound lookup with `M = 3` and
+`Nodes = {1, 4, 6}`, a query from node `1` for target `0` is forwarded to node
+`6`, which resolves it to successor node `1`.
 
 ## Dynamic Join Abstraction
 
