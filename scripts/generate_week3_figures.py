@@ -13,7 +13,6 @@ def read_rows(path: Path) -> list[dict[str, str]]:
 def save_figure(fig: plt.Figure, output: Path, name: str) -> None:
     output.mkdir(parents=True, exist_ok=True)
     fig.tight_layout()
-    fig.savefig(output / f"{name}.pdf", bbox_inches="tight")
     fig.savefig(output / f"{name}.png", bbox_inches="tight", dpi=200)
     plt.close(fig)
 

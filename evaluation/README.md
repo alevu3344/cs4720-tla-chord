@@ -35,3 +35,7 @@ powershell -ExecutionPolicy Bypass -File scripts\run_week3_experiments.ps1 `
   -OutputDirectory "evaluation\reproduction" `
   -Only "static-m4-n8-linear"
 ```
+
+This command creates `evaluation/reproduction/`. A full matrix run uses the
+default `evaluation/` output directory instead, so the reproduction directory
+does not exist unless this optional command has been run.

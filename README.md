@@ -75,9 +75,7 @@ The Week 3 evaluation uses one fixed setup for every timing:
 The runner measures process wall time with a high-resolution stopwatch. This
 includes JVM startup, parsing, state generation, and temporal analysis. It also
 records generated states, distinct states, graph depth, and generated-state
-throughput. Earlier Week 2 times were collected independently and used TLC's
-rounded display time, so values such as the former `1s` one-join result are not
-used for controlled timing comparisons.
+throughput.
 
 The dynamic matrix is:
 
@@ -106,7 +104,8 @@ The runner writes `evaluation/week3_results.csv`, `evaluation/environment.json`,
 and one raw TLC log per experiment under `evaluation/logs/`.
 
 To reproduce one reported row instead of the full matrix, pass its experiment
-identifier:
+identifier. The optional command below creates the gitignored
+`evaluation/reproduction/` scratch directory; a full matrix run does not:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\run_week3_experiments.ps1 `
@@ -123,14 +122,7 @@ M = 2
 Nodes = {0, 2}
 ```
 
-## Exploratory Week 2 TLC Results
-
-| Config | Properties checked | Result | States generated | Distinct states | Depth | Runtime |
-| --- | --- | --- | ---: | ---: | ---: | ---: |
-| `ChordStatic.cfg` | `TypeOK`; `LookupCorrect` | passed | 117,505 | 20,736 | 21 | 02s |
-| `configs/static-m2-basic.cfg` | `TypeOK`; `LookupCorrect` | passed | 117,505 | 20,736 | 21 | 02s |
-| `configs/static-m3-one-query.cfg` | `TypeOK`; `LookupCorrect` | passed | 1,585 | 67 | 5 | 01s |
-| `configs/static-m3-wrap-one-query.cfg` | `TypeOK`; `LookupCorrect` | passed | 1,537 | 65 | 4 | 01s |
+## Static Model Notes
 
 Unconstrained `M = 3` configs with all query records enabled grow into millions
 of states, so larger verification runs should use `OneQueryConstraint` or a more
@@ -208,30 +200,6 @@ tlc -config configs/dynamic-m3-one-join-invariant.cfg ChordDynamic.tla
 tlc -config configs/dynamic-m3-two-joins-invariant.cfg ChordDynamic.tla
 tlc -config configs/dynamic-m3-two-joins.cfg ChordDynamic.tla
 ```
-
-## Exploratory Week 2 Dynamic TLC Results
-
-| Config | Properties checked | Result | States generated | Distinct states | Depth | Runtime |
-| --- | --- | --- | ---: | ---: | ---: | ---: |
-| `configs/dynamic-m3-one-join.cfg` | `TypeOK`; deadlock; `EventuallyStableAfterJoins` | passed | 51,409 | 6,516 | 21 | 01s |
-| `ChordDynamic.cfg` | `TypeOK`; deadlock; `EventuallyStableAfterJoins` | passed | 51,409 | 6,516 | 21 | 01s |
-| `configs/dynamic-m3-one-join-invariant.cfg` | `TypeOK`; `SuccessorCoreReachable`; deadlock | passed | 51,409 | 6,516 | 21 | 03s |
-| `configs/dynamic-m3-two-joins-invariant.cfg` | `TypeOK`; `SuccessorCoreReachable`; deadlock | passed | 25,309,837 | 2,345,796 | 35 | 01m 00s |
-| `configs/dynamic-m3-two-joins.cfg` | `TypeOK`; deadlock; `EventuallyStableAfterJoins` | passed | 25,309,837 | 2,345,796 | 35 | 21min 33s |
-
-Adding the second joining node increases the distinct state count from 6,516
-to 2,345,796, approximately `360x`. Both join orders and the interleavings of
-four nodes' maintenance actions, notification delivery, stale pointers, and
-finger-repair positions contribute to this multiplicative growth. This
-exploratory comparison also changes the final active-node count; the controlled
-matrix below isolates that factor.
-
-The invariant-only and liveness runs reach the same two-join state space, but
-the temporal run is much slower. Invariants are checked independently on each
-state as TLC discovers it. Liveness checking must additionally analyze the
-state-transition graph for fair cycles in which `AllJoinsDone` holds but
-`StableRing` is never reached, including the weak-fairness conditions in
-`Spec`.
 
 ## Controlled Week 3 Results
 
