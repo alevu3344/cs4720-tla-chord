@@ -122,9 +122,26 @@ AdvanceQuery(q) ==
            /\ LET forwarded_q == [q EXCEPT !.curr = next_node] IN
               queries' = (queries \ {q}) \cup {forwarded_q}
 
+\* Baseline lookup: forward only through successor pointers
+AdvanceQueryLinear(q) ==
+    /\ UNCHANGED <<succ, pred, finger>>
+    /\ IF InRightHalfClosed(q.target, q.curr, succ[q.curr]) THEN
+           LET resolved_q == [q EXCEPT !.result = succ[q.curr]] IN
+           queries' = (queries \ {q}) \cup {resolved_q}
+       ELSE
+           LET forwarded_q == [q EXCEPT !.curr = succ[q.curr]] IN
+           queries' = (queries \ {q}) \cup {forwarded_q}
+
 Next == 
     \/ (\E n \in Nodes, k \in Ring : StartQuery(n, k))
     \/ (\E q \in queries : q.result = NoResult /\ AdvanceQuery(q))
 
+NextLinear ==
+    \/ (\E n \in Nodes, k \in Ring : StartQuery(n, k))
+    \/ (\E q \in queries : q.result = NoResult /\ AdvanceQueryLinear(q))
+
 Spec == Init /\ [][Next]_StateVars
+
+\* Baseline specification used to compare finger routing with linear routing
+LinearSpec == Init /\ [][NextLinear]_StateVars
 =============================================================================
