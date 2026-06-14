@@ -45,10 +45,10 @@ With the `tlc` command:
 
 ```sh
 tlc -config ChordStatic.cfg ChordStatic.tla
-tlc -config configs/static-m2-basic.cfg ChordStatic.tla
-tlc -config configs/static-m3-one-query.cfg ChordStatic.tla
-tlc -config configs/static-m3-wrap-one-query.cfg ChordStatic.tla
-tlc -coverage 1 -config configs/static-m3-one-query-runtime.cfg ChordStatic.tla
+tlc -config ChordDynamic.cfg ChordDynamic.tla
+tlc -config configs/examples/static-m3-n3-wraparound.cfg ChordStatic.tla
+tlc -coverage 1 -config configs/coverage/static-actions.cfg ChordStatic.tla
+tlc -coverage 1 -config configs/coverage/dynamic-actions.cfg ChordDynamic.tla
 ```
 
 With `tla2tools.jar` from PowerShell:
@@ -59,9 +59,18 @@ java -cp $env:TLA2TOOLS_JAR tla2sany.SANY ChordStatic.tla
 java -cp $env:TLA2TOOLS_JAR tlc2.TLC -config ChordStatic.cfg ChordStatic.tla
 ```
 
-## Controlled Week 3 Experiments
+## Configuration Layout
 
-The Week 3 evaluation uses one fixed setup for every timing:
+- `ChordStatic.cfg` and `ChordDynamic.cfg` are the canonical default configs.
+- `configs/examples/` contains small targeted model examples.
+- `configs/coverage/` contains property-free SysMoBench action-coverage runs.
+- `configs/evaluation/dynamic/` contains the controlled join matrix.
+- `configs/evaluation/lookup/` contains finger versus successor-only baselines.
+- `configs/evaluation/workload/` contains the constrained-query baseline.
+
+## Controlled Phase 3 Experiments
+
+The Phase 3 evaluation uses one fixed setup for every timing:
 
 - TLC `2026.05.18.174321`.
 - OpenJDK `21.0.9`.
@@ -92,15 +101,15 @@ The two four-node scenarios converge to the same final node set
 Run the complete matrix and both baselines:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\run_week3_experiments.ps1 `
+powershell -ExecutionPolicy Bypass -File scripts\run_phase3_experiments.ps1 `
   -Tla2ToolsJar "C:\path\to\tla2tools.jar" `
-  -MetaRoot "D:\tlc-chord-week3"
+  -MetaRoot "D:\tlc-chord-phase3"
 
 python -m pip install -r requirements-evaluation.txt
-python scripts\generate_week3_figures.py
+python scripts\generate_phase3_figures.py
 ```
 
-The runner writes `evaluation/week3_results.csv`, `evaluation/environment.json`,
+The runner writes `evaluation/phase3_results.csv`, `evaluation/environment.json`,
 and one raw TLC log per experiment under `evaluation/logs/`.
 
 To reproduce one reported row instead of the full matrix, pass its experiment
@@ -108,18 +117,11 @@ identifier. The optional command below creates the gitignored
 `evaluation/reproduction/` scratch directory; a full matrix run does not:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\run_week3_experiments.ps1 `
+powershell -ExecutionPolicy Bypass -File scripts\run_phase3_experiments.ps1 `
   -Tla2ToolsJar "C:\path\to\tla2tools.jar" `
-  -MetaRoot "D:\tlc-chord-week3" `
+  -MetaRoot "D:\tlc-chord-phase3" `
   -OutputDirectory "evaluation\reproduction" `
   -Only "dynamic-m3-n4-two-joins-temporal"
-```
-
-The default config uses:
-
-```tla
-M = 2
-Nodes = {0, 2}
 ```
 
 ## Static Model Notes
@@ -194,16 +196,13 @@ Run the dynamic configs with:
 
 ```sh
 tlc -config ChordDynamic.cfg ChordDynamic.tla
-tlc -config configs/dynamic-m3-one-join.cfg ChordDynamic.tla
-tlc -coverage 1 -config configs/dynamic-m3-one-join-runtime.cfg ChordDynamic.tla
-tlc -config configs/dynamic-m3-one-join-invariant.cfg ChordDynamic.tla
-tlc -config configs/dynamic-m3-two-joins-invariant.cfg ChordDynamic.tla
-tlc -config configs/dynamic-m3-two-joins.cfg ChordDynamic.tla
+tlc -config configs/evaluation/dynamic/m3-n4-j2-invariant.cfg ChordDynamic.tla
+tlc -config configs/evaluation/dynamic/m3-n4-j2-temporal.cfg ChordDynamic.tla
 ```
 
-## Controlled Week 3 Results
+## Controlled Phase 3 Results
 
-All values below come from `evaluation/week3_results.csv`. Wall time includes
+All values below come from `evaluation/phase3_results.csv`. Wall time includes
 JVM startup and parsing.
 
 | Scenario | Mode | Generated | Distinct | Depth | Wall time | Generated states/s |
@@ -265,8 +264,8 @@ The artifact adapts three SysMoBench metrics:
 | Runtime correctness | 100% (7/7 action families) | TLC executes the six protocol actions and the `AdvanceQueryLinear` baseline without runtime errors. |
 | Invariant correctness | 100% (5/5 obligations) | Both `TypeOK` checks, `LookupCorrect`, `SuccessorCoreReachable`, and `EventuallyStableAfterJoins` pass the recorded configurations. |
 
-Runtime correctness is measured with the two `*-runtime.cfg` files and TLC's
-`-coverage 1` option, supplemented by the successor-only baseline run. Trace
-conformance is not evaluated because the project models the Chord paper and
-does not include an instrumented Chord implementation or implementation
-traces.
+Runtime correctness is measured with the two configs under `configs/coverage/`
+and TLC's `-coverage 1` option, supplemented by the successor-only baseline
+run. Trace conformance is not evaluated because the project models the Chord
+paper and does not include an instrumented Chord implementation or
+implementation traces.

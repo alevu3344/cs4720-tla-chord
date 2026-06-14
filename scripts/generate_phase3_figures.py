@@ -225,7 +225,7 @@ def baseline_figures(rows: list[dict[str, str]], output: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--results", type=Path, default=Path("evaluation/week3_results.csv")
+        "--results", type=Path, default=Path("evaluation/phase3_results.csv")
     )
     parser.add_argument(
         "--output", type=Path, default=Path("evaluation/figures")

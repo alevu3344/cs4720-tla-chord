@@ -29,9 +29,9 @@ $Tla2ToolsJar = (Resolve-Path $Tla2ToolsJar).Path
 if (-not $MetaRoot) {
     $drive = Get-PSDrive D -ErrorAction SilentlyContinue
     if ($drive -and $drive.Free -gt 10GB) {
-        $MetaRoot = "D:\tlc-chord-week3"
+        $MetaRoot = "D:\tlc-chord-phase3"
     } else {
-        $MetaRoot = Join-Path $env:TEMP "tlc-chord-week3"
+        $MetaRoot = Join-Path $env:TEMP "tlc-chord-phase3"
     }
 }
 
@@ -41,20 +41,20 @@ New-Item -ItemType Directory -Force -Path $outputPath, $logPath, $MetaRoot | Out
 $resolvedMetaRoot = (Resolve-Path $MetaRoot).Path
 
 $experiments = @(
-    [pscustomobject]@{ id="dynamic-m2-n3-one-join-invariant"; category="dynamic_matrix"; scenario="M2-N3-J1"; m=2; initial_nodes=2; joins=1; final_nodes=3; verification="invariant"; routing="n/a"; constrained="n/a"; model="ChordDynamic.tla"; config="configs/week3/dynamic-m2-n3-one-join-invariant.cfg"; properties="TypeOK; SuccessorCoreReachable; deadlock" },
-    [pscustomobject]@{ id="dynamic-m2-n3-one-join-temporal"; category="dynamic_matrix"; scenario="M2-N3-J1"; m=2; initial_nodes=2; joins=1; final_nodes=3; verification="temporal"; routing="n/a"; constrained="n/a"; model="ChordDynamic.tla"; config="configs/week3/dynamic-m2-n3-one-join-temporal.cfg"; properties="TypeOK; SuccessorCoreReachable; deadlock; EventuallyStableAfterJoins" },
-    [pscustomobject]@{ id="dynamic-m3-n3-one-join-invariant"; category="dynamic_matrix"; scenario="M3-N3-J1"; m=3; initial_nodes=2; joins=1; final_nodes=3; verification="invariant"; routing="n/a"; constrained="n/a"; model="ChordDynamic.tla"; config="configs/week3/dynamic-m3-n3-one-join-invariant.cfg"; properties="TypeOK; SuccessorCoreReachable; deadlock" },
-    [pscustomobject]@{ id="dynamic-m3-n3-one-join-temporal"; category="dynamic_matrix"; scenario="M3-N3-J1"; m=3; initial_nodes=2; joins=1; final_nodes=3; verification="temporal"; routing="n/a"; constrained="n/a"; model="ChordDynamic.tla"; config="configs/week3/dynamic-m3-n3-one-join-temporal.cfg"; properties="TypeOK; SuccessorCoreReachable; deadlock; EventuallyStableAfterJoins" },
-    [pscustomobject]@{ id="dynamic-m3-n4-one-join-invariant"; category="dynamic_matrix"; scenario="M3-N4-J1"; m=3; initial_nodes=3; joins=1; final_nodes=4; verification="invariant"; routing="n/a"; constrained="n/a"; model="ChordDynamic.tla"; config="configs/week3/dynamic-m3-n4-one-join-invariant.cfg"; properties="TypeOK; SuccessorCoreReachable; deadlock" },
-    [pscustomobject]@{ id="dynamic-m3-n4-one-join-temporal"; category="dynamic_matrix"; scenario="M3-N4-J1"; m=3; initial_nodes=3; joins=1; final_nodes=4; verification="temporal"; routing="n/a"; constrained="n/a"; model="ChordDynamic.tla"; config="configs/week3/dynamic-m3-n4-one-join-temporal.cfg"; properties="TypeOK; SuccessorCoreReachable; deadlock; EventuallyStableAfterJoins" },
-    [pscustomobject]@{ id="dynamic-m3-n4-two-joins-invariant"; category="dynamic_matrix"; scenario="M3-N4-J2"; m=3; initial_nodes=2; joins=2; final_nodes=4; verification="invariant"; routing="n/a"; constrained="n/a"; model="ChordDynamic.tla"; config="configs/week3/dynamic-m3-n4-two-joins-invariant.cfg"; properties="TypeOK; SuccessorCoreReachable; deadlock" },
-    [pscustomobject]@{ id="dynamic-m3-n4-two-joins-temporal"; category="dynamic_matrix"; scenario="M3-N4-J2"; m=3; initial_nodes=2; joins=2; final_nodes=4; verification="temporal"; routing="n/a"; constrained="n/a"; model="ChordDynamic.tla"; config="configs/week3/dynamic-m3-n4-two-joins-temporal.cfg"; properties="TypeOK; SuccessorCoreReachable; deadlock; EventuallyStableAfterJoins" },
-    [pscustomobject]@{ id="static-m3-n4-finger"; category="lookup_baseline"; scenario="M3-N4"; m=3; initial_nodes=4; joins=0; final_nodes=4; verification="invariant"; routing="finger"; constrained="yes"; model="ChordStatic.tla"; config="configs/week3/static-m3-n4-finger.cfg"; properties="TypeOK; LookupCorrect" },
-    [pscustomobject]@{ id="static-m3-n4-linear"; category="lookup_baseline"; scenario="M3-N4"; m=3; initial_nodes=4; joins=0; final_nodes=4; verification="invariant"; routing="successor-only"; constrained="yes"; model="ChordStatic.tla"; config="configs/week3/static-m3-n4-linear.cfg"; properties="TypeOK; LookupCorrect" },
-    [pscustomobject]@{ id="static-m4-n8-finger"; category="lookup_baseline"; scenario="M4-N8"; m=4; initial_nodes=8; joins=0; final_nodes=8; verification="invariant"; routing="finger"; constrained="yes"; model="ChordStatic.tla"; config="configs/week3/static-m4-n8-finger.cfg"; properties="TypeOK; LookupCorrect" },
-    [pscustomobject]@{ id="static-m4-n8-linear"; category="lookup_baseline"; scenario="M4-N8"; m=4; initial_nodes=8; joins=0; final_nodes=8; verification="invariant"; routing="successor-only"; constrained="yes"; model="ChordStatic.tla"; config="configs/week3/static-m4-n8-linear.cfg"; properties="TypeOK; LookupCorrect" },
-    [pscustomobject]@{ id="static-m2-n2-unconstrained"; category="workload_baseline"; scenario="M2-N2"; m=2; initial_nodes=2; joins=0; final_nodes=2; verification="invariant"; routing="finger"; constrained="no"; model="ChordStatic.tla"; config="configs/static-m2-basic.cfg"; properties="TypeOK; LookupCorrect" },
-    [pscustomobject]@{ id="static-m2-n2-one-query"; category="workload_baseline"; scenario="M2-N2"; m=2; initial_nodes=2; joins=0; final_nodes=2; verification="invariant"; routing="finger"; constrained="yes"; model="ChordStatic.tla"; config="configs/week3/static-m2-n2-one-query.cfg"; properties="TypeOK; LookupCorrect" }
+    [pscustomobject]@{ id="dynamic-m2-n3-one-join-invariant"; category="dynamic_matrix"; scenario="M2-N3-J1"; m=2; initial_nodes=2; joins=1; final_nodes=3; verification="invariant"; routing="n/a"; constrained="n/a"; model="ChordDynamic.tla"; config="configs/evaluation/dynamic/m2-n3-j1-invariant.cfg"; properties="TypeOK; SuccessorCoreReachable; deadlock" },
+    [pscustomobject]@{ id="dynamic-m2-n3-one-join-temporal"; category="dynamic_matrix"; scenario="M2-N3-J1"; m=2; initial_nodes=2; joins=1; final_nodes=3; verification="temporal"; routing="n/a"; constrained="n/a"; model="ChordDynamic.tla"; config="configs/evaluation/dynamic/m2-n3-j1-temporal.cfg"; properties="TypeOK; SuccessorCoreReachable; deadlock; EventuallyStableAfterJoins" },
+    [pscustomobject]@{ id="dynamic-m3-n3-one-join-invariant"; category="dynamic_matrix"; scenario="M3-N3-J1"; m=3; initial_nodes=2; joins=1; final_nodes=3; verification="invariant"; routing="n/a"; constrained="n/a"; model="ChordDynamic.tla"; config="configs/evaluation/dynamic/m3-n3-j1-invariant.cfg"; properties="TypeOK; SuccessorCoreReachable; deadlock" },
+    [pscustomobject]@{ id="dynamic-m3-n3-one-join-temporal"; category="dynamic_matrix"; scenario="M3-N3-J1"; m=3; initial_nodes=2; joins=1; final_nodes=3; verification="temporal"; routing="n/a"; constrained="n/a"; model="ChordDynamic.tla"; config="ChordDynamic.cfg"; properties="TypeOK; SuccessorCoreReachable; deadlock; EventuallyStableAfterJoins" },
+    [pscustomobject]@{ id="dynamic-m3-n4-one-join-invariant"; category="dynamic_matrix"; scenario="M3-N4-J1"; m=3; initial_nodes=3; joins=1; final_nodes=4; verification="invariant"; routing="n/a"; constrained="n/a"; model="ChordDynamic.tla"; config="configs/evaluation/dynamic/m3-n4-j1-invariant.cfg"; properties="TypeOK; SuccessorCoreReachable; deadlock" },
+    [pscustomobject]@{ id="dynamic-m3-n4-one-join-temporal"; category="dynamic_matrix"; scenario="M3-N4-J1"; m=3; initial_nodes=3; joins=1; final_nodes=4; verification="temporal"; routing="n/a"; constrained="n/a"; model="ChordDynamic.tla"; config="configs/evaluation/dynamic/m3-n4-j1-temporal.cfg"; properties="TypeOK; SuccessorCoreReachable; deadlock; EventuallyStableAfterJoins" },
+    [pscustomobject]@{ id="dynamic-m3-n4-two-joins-invariant"; category="dynamic_matrix"; scenario="M3-N4-J2"; m=3; initial_nodes=2; joins=2; final_nodes=4; verification="invariant"; routing="n/a"; constrained="n/a"; model="ChordDynamic.tla"; config="configs/evaluation/dynamic/m3-n4-j2-invariant.cfg"; properties="TypeOK; SuccessorCoreReachable; deadlock" },
+    [pscustomobject]@{ id="dynamic-m3-n4-two-joins-temporal"; category="dynamic_matrix"; scenario="M3-N4-J2"; m=3; initial_nodes=2; joins=2; final_nodes=4; verification="temporal"; routing="n/a"; constrained="n/a"; model="ChordDynamic.tla"; config="configs/evaluation/dynamic/m3-n4-j2-temporal.cfg"; properties="TypeOK; SuccessorCoreReachable; deadlock; EventuallyStableAfterJoins" },
+    [pscustomobject]@{ id="static-m3-n4-finger"; category="lookup_baseline"; scenario="M3-N4"; m=3; initial_nodes=4; joins=0; final_nodes=4; verification="invariant"; routing="finger"; constrained="yes"; model="ChordStatic.tla"; config="configs/evaluation/lookup/m3-n4-finger.cfg"; properties="TypeOK; LookupCorrect" },
+    [pscustomobject]@{ id="static-m3-n4-linear"; category="lookup_baseline"; scenario="M3-N4"; m=3; initial_nodes=4; joins=0; final_nodes=4; verification="invariant"; routing="successor-only"; constrained="yes"; model="ChordStatic.tla"; config="configs/evaluation/lookup/m3-n4-linear.cfg"; properties="TypeOK; LookupCorrect" },
+    [pscustomobject]@{ id="static-m4-n8-finger"; category="lookup_baseline"; scenario="M4-N8"; m=4; initial_nodes=8; joins=0; final_nodes=8; verification="invariant"; routing="finger"; constrained="yes"; model="ChordStatic.tla"; config="configs/evaluation/lookup/m4-n8-finger.cfg"; properties="TypeOK; LookupCorrect" },
+    [pscustomobject]@{ id="static-m4-n8-linear"; category="lookup_baseline"; scenario="M4-N8"; m=4; initial_nodes=8; joins=0; final_nodes=8; verification="invariant"; routing="successor-only"; constrained="yes"; model="ChordStatic.tla"; config="configs/evaluation/lookup/m4-n8-linear.cfg"; properties="TypeOK; LookupCorrect" },
+    [pscustomobject]@{ id="static-m2-n2-unconstrained"; category="workload_baseline"; scenario="M2-N2"; m=2; initial_nodes=2; joins=0; final_nodes=2; verification="invariant"; routing="finger"; constrained="no"; model="ChordStatic.tla"; config="ChordStatic.cfg"; properties="TypeOK; LookupCorrect" },
+    [pscustomobject]@{ id="static-m2-n2-one-query"; category="workload_baseline"; scenario="M2-N2"; m=2; initial_nodes=2; joins=0; final_nodes=2; verification="invariant"; routing="finger"; constrained="yes"; model="ChordStatic.tla"; config="configs/evaluation/workload/m2-n2-one-query.cfg"; properties="TypeOK; LookupCorrect" }
 )
 
 if ($Only.Count -gt 0) {
@@ -177,6 +177,6 @@ foreach ($experiment in $experiments) {
     }
 }
 
-$csvPath = Join-Path $outputPath "week3_results.csv"
+$csvPath = Join-Path $outputPath "phase3_results.csv"
 $rows | Export-Csv -NoTypeInformation -Encoding utf8 $csvPath
 Write-Host "Wrote $csvPath"
