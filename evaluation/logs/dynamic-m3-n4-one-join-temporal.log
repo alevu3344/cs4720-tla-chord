@@ -1,0 +1,41 @@
+﻿TLC2 Version 2026.05.18.174321 (rev: 8ba1027)
+Running breadth-first search Model-Checking with fp 4 and seed -8460416022211830223 with 1 worker on 8 cores with 3925MB heap and 64MB offheap memory [pid: 16340] (Windows 10 10.0 amd64, BellSoft 21.0.9 64bit, MSBDiskFPSet, DiskStateQueue).
+Parsing file C:\Users\Dani\Desktop\Workspace\University\MSc\Q4\CS4720-Research-in-Software Analysis\Project\cs4720-tla-chord\ChordDynamic.tla
+Parsing file C:\Users\Dani\AppData\Local\Temp\tlc-18438885835294094523\Naturals.tla (jar:file:/C:/Users/Dani/.vscode/extensions/tlaplus.vscode-ide-2026.5.181751/tools/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)
+Parsing file C:\Users\Dani\AppData\Local\Temp\tlc-18438885835294094523\FiniteSets.tla (jar:file:/C:/Users/Dani/.vscode/extensions/tlaplus.vscode-ide-2026.5.181751/tools/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)
+Parsing file C:\Users\Dani\AppData\Local\Temp\tlc-18438885835294094523\_TLCTrace.tla (jar:file:/C:/Users/Dani/.vscode/extensions/tlaplus.vscode-ide-2026.5.181751/tools/tla2tools.jar!/tla2sany/StandardModules/_TLCTrace.tla)
+Parsing file C:\Users\Dani\AppData\Local\Temp\tlc-18438885835294094523\Sequences.tla (jar:file:/C:/Users/Dani/.vscode/extensions/tlaplus.vscode-ide-2026.5.181751/tools/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)
+Parsing file C:\Users\Dani\AppData\Local\Temp\tlc-18438885835294094523\TLC.tla (jar:file:/C:/Users/Dani/.vscode/extensions/tlaplus.vscode-ide-2026.5.181751/tools/tla2tools.jar!/tla2sany/StandardModules/TLC.tla)
+Parsing file C:\Users\Dani\AppData\Local\Temp\tlc-18438885835294094523\TLCExt.tla (jar:file:/C:/Users/Dani/.vscode/extensions/tlaplus.vscode-ide-2026.5.181751/tools/tla2tools.jar!/tla2sany/StandardModules/TLCExt.tla)
+Parsing file C:\Users\Dani\AppData\Local\Temp\tlc-18438885835294094523\Integers.tla (jar:file:/C:/Users/Dani/.vscode/extensions/tlaplus.vscode-ide-2026.5.181751/tools/tla2tools.jar!/tla2sany/StandardModules/Integers.tla)
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module Integers
+Semantic processing of module TLCExt
+Semantic processing of module _TLCTrace
+Semantic processing of module ChordDynamic
+Linting of module TLCExt
+Linting of module _TLCTrace
+Linting of module ChordDynamic
+Starting... (2026-06-13 16:01:06)
+Implied-temporal checking--satisfiability problem has 1 branches.
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-06-13 16:01:07.
+Progress(8) at 2026-06-13 16:01:10: 7,407 states generated (7,407 s/min), 1,712 distinct states found (1,712 ds/min), 901 states left on queue.
+Progress(14) at 2026-06-13 16:02:10: 272,295 states generated (264,888 s/min), 35,886 distinct states found (34,174 ds/min), 8,526 states left on queue.
+Progress(17) at 2026-06-13 16:03:10: 494,480 states generated (222,185 s/min), 56,757 distinct states found (20,871 ds/min), 8,068 states left on queue.
+Progress(20) at 2026-06-13 16:04:10: 696,928 states generated (202,448 s/min), 71,983 distinct states found (15,226 ds/min), 4,313 states left on queue.
+Progress(27) at 2026-06-13 16:04:48: 810,541 states generated, 77,976 distinct states found, 0 states left on queue.
+Checking temporal properties for the complete state space with 77976 total distinct states at (2026-06-13 16:04:48)
+Finished checking temporal properties in 12s at 2026-06-13 16:05:00
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 3.1E-9
+  based on the actual fingerprints:  val = 2.7E-9
+810541 states generated, 77976 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 27.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 8 and the 95th percentile is 2).
+Finished in 03min 55s at (2026-06-13 16:05:00)
